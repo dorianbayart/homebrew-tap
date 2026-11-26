@@ -1,0 +1,60 @@
+# Follows the releases of Entre Nous: every hour, when a newer release exists, puts its version
+# and the checksum of entrenous-cli.tgz in the formula, checks that it installs and runs, and
+# commits. Also runs on demand (Actions → Update → Run workflow).
+name: Update
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: update
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Newer release?
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest=$(gh release view --repo dorianbayart/entre-nous --json tagName --jq .tagName)
+          current=$(sed -n 's|.*/releases/download/\(v[^/]*\)/.*|\1|p' Formula/entrenous.rb)
+          echo "latest $latest, formula $current"
+          if [ "$latest" != "$current" ]; then echo "tag=$latest" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Formula
+        if: steps.v.outputs.tag
+        env:
+          TAG: ${{ steps.v.outputs.tag }}
+        run: |
+          url="https://github.com/dorianbayart/entre-nous/releases/download/$TAG/entrenous-cli.tgz"
+          sha=$(curl -fsSL "$url" | sha256sum | cut -d' ' -f1)
+          sed -i -e "s|^  url \".*\"|  url \"$url\"|" -e "s|^  sha256 \".*\"|  sha256 \"$sha\"|" Formula/entrenous.rb
+          git diff
+
+      - uses: Homebrew/actions/setup-homebrew@main
+        if: steps.v.outputs.tag
+
+      - name: Check
+        if: steps.v.outputs.tag
+        run: |
+          brew install dorianbayart/tap/entrenous
+          brew test dorianbayart/tap/entrenous
+          brew audit --strict dorianbayart/tap/entrenous
+
+      - name: Commit
+        if: steps.v.outputs.tag
+        env:
+          TAG: ${{ steps.v.outputs.tag }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -am "entrenous ${TAG#v}"
+          git push
