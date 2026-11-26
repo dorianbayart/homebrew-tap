@@ -45,6 +45,9 @@ jobs:
       - name: Check
         if: steps.v.outputs.tag
         run: |
+          # brew reads the tap from its own folder: the formula updated above goes there
+          tap=$(brew --repository dorianbayart/tap)
+          [ "$tap/Formula/entrenous.rb" -ef Formula/entrenous.rb ] || cp Formula/entrenous.rb "$tap/Formula/"
           brew install dorianbayart/tap/entrenous
           brew test dorianbayart/tap/entrenous
           brew audit --strict dorianbayart/tap/entrenous
