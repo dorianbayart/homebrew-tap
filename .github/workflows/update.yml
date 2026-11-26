@@ -29,6 +29,10 @@ jobs:
           echo "latest $latest, formula $current"
           if [ "$latest" != "$current" ]; then echo "tag=$latest" >> "$GITHUB_OUTPUT"; fi
 
+      # before the formula is changed: it resets the checkout
+      - uses: Homebrew/actions/setup-homebrew@main
+        if: steps.v.outputs.tag
+
       - name: Formula
         if: steps.v.outputs.tag
         env:
@@ -38,9 +42,6 @@ jobs:
           sha=$(curl -fsSL "$url" | sha256sum | cut -d' ' -f1)
           sed -i -e "s|^  url \".*\"|  url \"$url\"|" -e "s|^  sha256 \".*\"|  sha256 \"$sha\"|" Formula/entrenous.rb
           git diff
-
-      - uses: Homebrew/actions/setup-homebrew@main
-        if: steps.v.outputs.tag
 
       - name: Check
         if: steps.v.outputs.tag
