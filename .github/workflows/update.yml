@@ -61,4 +61,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -am "entrenous ${TAG#v}"
-          git push
+          # setup-homebrew renamed the local branch: pushed to the one this run started from
+          git push origin "HEAD:$GITHUB_REF_NAME"
