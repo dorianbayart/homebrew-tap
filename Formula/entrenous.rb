@@ -1,8 +1,8 @@
 class Entrenous < Formula
   desc "Shared clipboard, end-to-end encrypted, between your devices"
   homepage "https://entrenous.0xdba.dev"
-  url "https://github.com/dorianbayart/entre-nous/releases/download/v0.1.58/entrenous-cli.tgz"
-  sha256 "535eec7a7af4bd27754e4cc2eccbfb1c1394ae1e09a597d75ffb912b74a04f3a"
+  url "https://github.com/dorianbayart/entre-nous/releases/download/v0.1.59/entrenous-cli.tgz"
+  sha256 "90e090dcf7a51ef942de08d08395e5df790c332bfe8eb9dd62f39714df6437eb"
   license "AGPL-3.0-or-later"
 
   livecheck do
